@@ -1,0 +1,8 @@
+venv
+.idea
+__cache__
+.env.dev
+.env.production
+.env
+
+

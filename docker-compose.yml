@@ -1,0 +1,46 @@
+version: "3.9"
+
+
+services:
+
+  flask_rested:
+      container_name: pod_flask_rested
+      build:
+          context: .
+          dockerfile: deploy/docker/Dockerfile
+      restart: always
+      env_file:
+        - flask_rested/app/config/.env
+      depends_on:
+        flask_rested_database:
+          condition: service_healthy
+      volumes:
+        - "${PWD}/flask_rested:/web/app"
+      ports:
+        - "5000:5000"
+      networks:
+        - flask_rested_net
+
+  flask_rested_database:
+    container_name: pod_flask_rested_database
+    image: postgres:latest
+    env_file:
+      - flask_rested/app/config/.env
+    volumes:
+      - flask_rested_database_volume:/var/lib/postgresql/data/ # data persistance after container shuts down
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - flask_rested_net
+
+volumes:
+  flask_rested_database_volume:
+
+networks:
+  flask_rested_net:
+    name: flask_rested_net
+    driver: bridge
+
